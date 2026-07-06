@@ -30,8 +30,6 @@
 
 // 2. グローバル変数のextern宣言
 // （「他のソースファイルで定義されている」ことを宣言）
-extern Bowl balls[MAX_BALLS];
-extern Pin pin;
 
 extern double launcherX; //ボール発射時の座標
 extern double remainingTime; //残り時間
@@ -66,6 +64,9 @@ typedef struct {
   double r;
   double vx;
 } Pin;
+
+extern Bowl balls[MAX_BALLS];
+extern Pin pin;
 
 // 6. 関数のプロトタイプ宣言
 // logic.c

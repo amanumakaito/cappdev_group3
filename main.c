@@ -1,6 +1,8 @@
 #include "common.h"
 
+// 更新間隔[ms]
 int timer_interval = 50;
+// ボール生成用経過時間[ms]
 int elapsed_time = 0;
 
 void timer(int value)
@@ -38,24 +40,29 @@ void timer(int value)
 
 void initGL(void)
 {
+// 背景色指定 （黒）
     glClearColor(0.0, 0.0, 0.0, 1.0);
 
+// Zバッファを有効化
     glEnable(GL_DEPTH_TEST);
 
 // 背面カリングを有効化
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
+// 光源設定
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
 
+// キーボード入力設定
     glutKeyboardFunc(onKeyDown);
     glutKeyboardUpFunc(onKeyUp);
 
     glutSpecialFunc(onSpecialKeyDown);
     glutSpecialUpFunc(onSpecialKeyUp);
 
+// ゲーム時間設定
     remainingTime = GAME_TIME;
 
 }
@@ -65,11 +72,13 @@ void onReshape(int w, int h)
     winW = w;
     winH = h;
 
+// ウィンドウ全体を描画領域とする
     glViewport(0, 0, w, h);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
+// カメラ設定
     gluPerspective(
         30.0,
         (double)w / h,

@@ -4,35 +4,39 @@
 int timer_interval = 50;
 // ボール生成用経過時間[ms]
 int elapsed_time = 0;
+int winW = 640, winH = 480;
 
 void timer(int value)
 {
-    updateGame();
+// 勝敗が決まっていない間だけゲームを実行
+    if(!(gameFlags & (MASK_BALL_WIN | MASK_PIN_WIN)))
+    {
+        updateGame();
 
 //ボール生成タイマー
-    elapsed_time += timer_interval;
+        elapsed_time += timer_interval;
 
-    if (elapsed_time >= SPAWN_INTERVAL)
-    {
-        spawnBall();
-        elapsed_time = 0;
-    }
-
-//残り時間更新
-    static int timer_counter = 0;
-
-    timer_counter += timer_interval;
-
-    if (timer_counter >= 1000)
-    {
-        if (remainingTime > 0.0)
+        if (elapsed_time >= SPAWN_INTERVAL)
         {
-            remainingTime -= 1.0;
+            spawnBall();
+            elapsed_time = 0;
         }
 
-        timer_counter = 0;
-    }
+//残り時間更新
+        static int timer_counter = 0;
 
+        timer_counter += timer_interval;
+
+        if (timer_counter >= 1000)
+        {
+            if (remainingTime > 0.0)
+            {
+                remainingTime -= 1.0;
+            }
+
+            timer_counter = 0;
+        }
+    }
     glutPostRedisplay();
 
     glutTimerFunc(timer_interval, timer, 0);
@@ -61,16 +65,12 @@ void initGL(void)
 
     glutSpecialFunc(onSpecialKeyDown);
     glutSpecialUpFunc(onSpecialKeyUp);
-
-// ゲーム時間設定
-    remainingTime = GAME_TIME;
-
 }
 
 void onReshape(int w, int h)
 {
-    winW = w;
-    winH = h;
+    w = winW;
+    h = winH;
 
 // ウィンドウ全体を描画領域とする
     glViewport(0, 0, w, h);

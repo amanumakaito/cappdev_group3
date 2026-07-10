@@ -9,8 +9,6 @@ double remainingTime = GAME_TIME;
 unsigned int keyFlags = 0;
 unsigned int gameFlags = 0;
 
-int winW = 640, winH = 480;
-
 void initGame(void)
 {
   resetGame();
@@ -81,7 +79,7 @@ void updateGame(void)
   updateBalls();
   updatePin();
 
-  if (checkCollision()) {
+  if (collision()) {
     gameFlags |= MASK_BALL_WIN;
   }
 

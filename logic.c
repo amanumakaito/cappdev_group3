@@ -1,20 +1,20 @@
 #include "common.h"
 
-Bowl balls[MAX_BALLS];
-Pin pin;
+Bowl balls[MAX_BALLS];  //ボール構造体定義
+Pin pin;  //ピン構造体定義
 
-double launcherX = 0.0;
-double remainingTime = GAME_TIME;
+double launcherX = 0.0; //発射位置の初期値
+double remainingTime = GAME_TIME; //残り時間
 
-unsigned int keyFlags = 0;
-unsigned int gameFlags = 0;
+unsigned int keyFlags = 0;  //状態管理
+unsigned int gameFlags = 0; //ゲーム状態管理
 
-void initGame(void)
+void initGame(void) //ゲームリセット
 {
   resetGame();
 }
 
-void resetGame(void)
+void resetGame(void)  //ピン・ボール・フラッグ・制限時間初期化
 {
   int i;
 
@@ -45,13 +45,15 @@ void resetGame(void)
   gameFlags = 0;
 }
 
-void spawnBall(void)
+void spawnBall(void)  //アクティブでないボールをアクティブにする
 {
   int i;
 
   for (i = 0; i < MAX_BALLS; i++) {
-    if (!balls[i].active) {
-      balls[i].active = 1;
+    if (!balls[i].active) {//アクティブでない=未使用ボールを探す
+      balls[i].active = 1;  //アクティブにする
+
+      //発射位置にセット
       balls[i].x = launcherX;
       balls[i].y = 10.0;
       balls[i].z = BALL_RADIUS;
@@ -63,11 +65,12 @@ void spawnBall(void)
   }
 }
 
-void updateGame(void)
+void updateGame(void) //状態更新
 {
   if (gameFlags & MASK_BALL_WIN) return;
   if (gameFlags & MASK_PIN_WIN) return;
 
+  //発射位置の状態更新
   if (keyFlags & MASK_BALL_LEFT) {
     launcherX -= LAUNCHER_SPEED;
   }
@@ -76,33 +79,48 @@ void updateGame(void)
     launcherX += LAUNCHER_SPEED;
   }
 
+    //ピンの行動範囲制限
+  if (launcherX < -LANE_WIDTH / 2.0 + BALL_RADIUS) {
+    launcherX = -LANE_WIDTH / 2.0 + BALL_RADIUS;
+  }
+
+  //ピンの行動範囲制限
+  if (launcherX > LANE_WIDTH / 2.0 - BALL_RADIUS) {
+    launcherX = LANE_WIDTH / 2.0 - BALL_RADIUS;
+  }
+
+  //ピンとボールの状態更新
   updateBalls();
   updatePin();
 
+  //ピンに衝突
   if (collision()) {
     gameFlags |= MASK_BALL_WIN;
   }
 
+  //時間切れ
   judgeGame();
 }
 
-void updateBalls(void)
+void updateBalls(void)  //ボールの挙動
 {
   int i;
 
   for (i = 0; i < MAX_BALLS; i++) {
     if (!balls[i].active) continue;
 
+    //アクティブだけボールが動く
     balls[i].x += balls[i].vx;
     balls[i].y += balls[i].vy;
 
+    //レーン端に到達したらアクティブでなくなる
     if (balls[i].y < -12.0) {
       balls[i].active = 0;
     }
   }
 }
 
-void updatePin(void)
+void updatePin(void)  //ピンの挙動の詳細
 {
   pin.vx = 0.0;
 
@@ -116,22 +134,25 @@ void updatePin(void)
 
   pin.x += pin.vx;
 
+  //ピンの行動範囲制限
   if (pin.x < -LANE_WIDTH / 2.0 + pin.r) {
     pin.x = -LANE_WIDTH / 2.0 + pin.r;
   }
 
+  //ピンの行動範囲制限
   if (pin.x > LANE_WIDTH / 2.0 - pin.r) {
     pin.x = LANE_WIDTH / 2.0 - pin.r;
   }
 }
 
-int collision(void)
+int collision(void) //衝突
 {
   int i;
 
   for (i = 0; i < MAX_BALLS; i++) {
     if (!balls[i].active) continue;
 
+    //中心間距離
     double dx = balls[i].x - pin.x;
     double dy = balls[i].y - pin.y;
     double rr = balls[i].r + pin.r;
@@ -144,7 +165,7 @@ int collision(void)
   return 0;
 }
 
-void judgeGame(void)
+void judgeGame(void)  //時間切れ
 {
   if (remainingTime <= 0.0) {
     gameFlags |= MASK_PIN_WIN;

@@ -17,11 +17,11 @@
 #define LANE_WIDTH 5.0
 #define LANE_LENGTH 25.0
 
-#define BALL_RADIUS 0.35
+#define BALL_RADIUS 0.5
 #define PIN_RADIUS 0.4
 #define PIN_HEIGHT 1.5
 
-#define BALL_SPEED_Y -0.20
+#define BALL_SPEED_Y -0.80
 #define PIN_SPEED 0.15
 #define LAUNCHER_SPEED 0.15
 
@@ -97,6 +97,42 @@ void drawLane(void);
 void drawBalls(void);
 void drawPin(void);
 void drawUI(void); //時間表示，勝敗リザルト表示
+
+
+// スタート画面・キャラ選択・待機関連
+// 
+// ~ゲーム進行の流れ~
+// ()内は立っているフラグ
+//
+// 起動(フラグ無し)
+//         ↓
+//    1または2を押す
+//         ↓
+// キャラ選択切替(MASK_CHAR_PINまたはMASK_CHAR_PIKA)
+//         ↓
+//     Enterを押す
+//         ↓
+// ゲーム画面上で5秒カウントダウン(MASK_CHAR_~およびMASK_GAMEおよびMASK_WAIT)
+//         ↓
+//      待機終了
+//         ↓
+// 通常のゲーム進行(MASK_CHAR_~およびMASK_GAME)
+
+#define WAIT_TIME 5
+#define WAIT_INTERVAL 1000
+
+#define MASK_CHAR_PIN   (1 << 6)  //ゲーム進行中(drawGame)
+#define MASK_CHAR_PIKA  (1 << 7)  //待機中(drawWait)
+#define MASK_GAME       (1 << 8)  //ピン選択中(drawPin)
+#define MASK_WAIT       (1 << 9)  //ピカチュウ選択中(drawPikachu)
+
+extern int remainingWaitTime;  //残りの待機時間
+
+void startWait(void); //待機に必要なパラメータを初期化
+void drawStart(void);  //MASK_GAMEなしの時にスタート画面描画
+void drawWait(void);   //MASK_GAMEかつMASK_WAITの時に待機画面描画
+void drawPikachu(void);   //キャラ描画
+
 
 #endif // #ifndef COMMON_H ここまで
 

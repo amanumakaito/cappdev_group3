@@ -385,13 +385,23 @@ void drawUI(void)
     sprintf(buf, "Time:%.0f", remainingTime);
     drawString(10, 220, buf);
 
-    if (gameFlags & MASK_BALL_WIN) {
-        drawString(100, 120, "BALL WIN!");
+    //ラウンド関連
+    sprintf(buf, "Round:%d/%d", currentRound, maxRound);
+    drawString(10, 180, buf);
+
+    sprintf(buf, "Ball:%d  Pin:%d", ballScore, pinScore);
+    drawString(10, 160, buf);
+
+    //ゲーム勝敗表示
+    if (matchFinished) {
+        if (ballScore > pinScore) {
+            drawString(60, 120, "BALL PLAYER WIN!!");
+        }
+        else {
+            drawString(60, 120, "PIN PLAYER WIN!!");
+        }
     }
 
-    if (gameFlags & MASK_PIN_WIN) {
-        drawString(100, 120, "PIN WIN!");
-    }
 }
 
 //MASK_GAMEが立っているときだけ描画

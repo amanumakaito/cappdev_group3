@@ -78,7 +78,31 @@ void timer(int value)
             }
     }
 
-    }    glutPostRedisplay();
+    }   
+    
+    //ラウンド処理
+    //ゲーム終了(matchFinished=1)でない勝敗決定時
+    if (!matchFinished && (gameFlags & (MASK_BALL_WIN | MASK_PIN_WIN))) {
+        if (gameFlags & MASK_BALL_WIN) {
+            ballScore++;
+        }
+        else if (gameFlags & MASK_PIN_WIN) {
+            pinScore++;
+        }
+
+        //3ラウンド終了時または2点先取で終了
+        if ((currentRound < maxRound) && (ballScore < 2) && (pinScore < 2)) {
+            currentRound++;
+            resetRound();
+        }
+        else {
+            matchFinished = 1;
+        }
+    }
+    
+
+
+    glutPostRedisplay();
 
     glutTimerFunc(timer_interval, timer, 0);
 

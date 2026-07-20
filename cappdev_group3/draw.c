@@ -15,7 +15,12 @@ float color[][4] = {
     { 0.6, 0.3, 0.1, 1.0 }
 };
 
-float pos1[] = { 0.0, 0.0, 5.0, 1.0 };
+// カメラ側の斜め上に置く光源
+float pos1[] = { 0.0, -15.0, 10.0, 1.0 };
+
+float lightAmbient[]  = { 0.35, 0.35, 0.35, 1.0 };
+float lightDiffuse[]  = { 0.90, 0.90, 0.90, 1.0 };
+float lightSpecular[] = { 0.60, 0.60, 0.60, 1.0 };
 
 void drawString(float x, float y, char *s)
 {
@@ -33,7 +38,7 @@ void drawString(float x, float y, char *s)
     glRasterPos2f(x, y);
 
     while (*s) {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *s++);
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *s++);
     }
 
     glPopMatrix();
@@ -50,13 +55,14 @@ void drawString(float x, float y, char *s)
 void drawStart(void){
     // char buf[64];
     glColor3f(1.0, 1.0, 1.0);
-    drawString(150, 120, "bowling game");
-    drawString(150, 90, "key 1: PIN  key2: PIKACHU");
+    drawString(120, 140, "Bowling Game");
+    drawString(120, 120, "key 1: PIN  key2: PIKACHU");
+    drawString(60, 100, "Choosing: ");
     if(gameFlags & MASK_CHAR_PIN){
-        drawString(150, 60, "PIN");
+        drawString(120, 100, "PIN");
     }
     else if(gameFlags & MASK_CHAR_PIKA){
-        drawString(150, 30, "PIKACHU");
+        drawString(150, 100, "PIKACHU");
     }
 }
 
@@ -100,13 +106,48 @@ void drawBalls(void)
 
     for (i = 0; i < MAX_BALLS; i++) {
         if (balls[i].active) {
+            double rotation;
+
             glPushMatrix();
 
-            // glMaterialfv(GL_FRONT, GL_DIFFUSE, color[balls[i].color]);
             glColor3fv(color[balls[i].color]);
 
-            glTranslatef(balls[i].x, balls[i].y, balls[i].z);
-            glutSolidSphere(balls[i].r, 20, 20);
+            glTranslatef(
+                balls[i].x,
+                balls[i].y,
+                balls[i].z
+            );
+
+            // 発射地点から進んだ距離に応じて回転
+            rotation =
+                ((balls[i].y - 10.0) / balls[i].r)
+                * 180.0 / PI;
+
+            glRotated(rotation, 1.0, 0.0, 0.0);
+
+            glutSolidSphere(
+                balls[i].r,
+                20,
+                20
+            );
+
+            // 指孔
+            glColor3fv(color[BLACK]);
+
+            glPushMatrix();
+                glTranslatef(-0.12, -0.46, 0.12);
+                glutSolidSphere(0.075, 16, 16);
+            glPopMatrix();
+
+            glPushMatrix();
+                glTranslatef(0.12, -0.46, 0.12);
+                glutSolidSphere(0.075, 16, 16);
+            glPopMatrix();
+
+            glPushMatrix();
+                glTranslatef(0.0, -0.46, -0.10);
+                glutSolidSphere(0.090, 16, 16);
+            glPopMatrix();
 
             glPopMatrix();
         }
@@ -115,28 +156,75 @@ void drawBalls(void)
 
 void drawPin(void)
 {
+    GLUquadric *quadric = gluNewQuadric();
+
+    if (quadric == NULL) {
+        return;
+    }
+
+    gluQuadricNormals(quadric, GLU_SMOOTH);
+
     glPushMatrix();
-    glTranslatef(pin.x, pin.y, pin.z + 0.8);
-    // glMaterialfv(GL_FRONT, GL_DIFFUSE, color[BLACK]);
-    glColor3fv(color[BLACK]);
 
-    glutSolidSphere(0.25, 20, 20);
+    glTranslatef(pin.x, pin.y, pin.z);
 
-    glTranslatef(0, 0, -0.3);
-    glutSolidCone(0.25, 0.4, 20, 20);
+    // 白い本体
+    glColor3fv(color[WHITE]);
 
-    glTranslatef(0, 0, -0.4);
-    glutSolidCone(0.35, 0.8, 20, 20);
-
-    // glMaterialfv(GL_FRONT, GL_DIFFUSE, color[BLACK]);
     glPushMatrix();
-    glTranslatef(0, 0, 0.1);
-    glutSolidTorus(0.02, 0.26, 10, 30);
-    glTranslatef(0, 0, -0.05);
-    glutSolidTorus(0.02, 0.26, 10, 30);
+        glTranslatef(0.0, 0.0, 0.02);
+        gluCylinder(quadric, 0.24, 0.34,
+                    0.18, 36, 4);
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(0.0, 0.0, 0.20);
+        gluCylinder(quadric, 0.34, 0.38,
+                    0.30, 36, 4);
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(0.0, 0.0, 0.50);
+        gluCylinder(quadric, 0.38, 0.24,
+                    0.36, 36, 6);
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(0.0, 0.0, 0.86);
+        gluCylinder(quadric, 0.24, 0.14,
+                    0.22, 36, 5);
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(0.0, 0.0, 1.08);
+        gluCylinder(quadric, 0.14, 0.12,
+                    0.20, 36, 4);
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(0.0, 0.0, 1.35);
+        glScalef(0.19, 0.19, 0.20);
+        glutSolidSphere(1.0, 30, 30);
+    glPopMatrix();
+
+    // 赤い2本線
+    glColor3fv(color[RED]);
+
+    glPushMatrix();
+        glTranslatef(0.0, 0.0, 0.96);
+        gluCylinder(quadric, 0.203, 0.174,
+                    0.065, 36, 2);
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslatef(0.0, 0.0, 1.11);
+        gluCylinder(quadric, 0.145, 0.139,
+                    0.065, 36, 2);
     glPopMatrix();
 
     glPopMatrix();
+
+    gluDeleteQuadric(quadric);
 }
 
 //キャラクター描画部分
@@ -392,6 +480,12 @@ void drawUI(void)
     sprintf(buf, "Ball:%d  Pin:%d", ballScore, pinScore);
     drawString(10, 160, buf);
 
+    sprintf(buf, "Snake(F):%d", snakeAmmo);
+    drawString(10, 140, buf);
+
+    sprintf(buf, "Zigzag(G):%d", zigzagAmmo);
+    drawString(10, 120, buf);
+
     //ゲーム勝敗表示
     if (matchFinished) {
         if (ballScore > pinScore) {
@@ -425,21 +519,26 @@ void drawGame(void)
 
 void display(void)
 {
+    glClearColor(0.03, 0.05, 0.10, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    gluLookAt(0.0, -20.0, 4,
-              0.0, -10.0, 1,
-              0.0, 0.0, 1.0);
+    gluLookAt(
+        0.0, -20.0, 4.0,
+        0.0, -10.0, 1.0,
+        0.0, 0.0, 1.0
+    );
 
     glLightfv(GL_LIGHT0, GL_POSITION, pos1);
-    
-    //MASK_GAMEが立っているならゲーム画面，いないならスタート画面
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightSpecular);
+
     if (gameFlags & MASK_GAME) {
         drawGame();
-    } 
+    }
     else {
         drawStart();
     }

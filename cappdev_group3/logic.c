@@ -16,6 +16,10 @@ int ballScore = 0;
 int pinScore = 0;
 int matchFinished = 0;
 
+//特殊ボール関連
+int snakeAmmo = SPECIAL_AMMO;
+int zigzagAmmo = SPECIAL_AMMO;
+
 void initGame(void) //ゲームリセット
 {
   resetGame();
@@ -35,6 +39,7 @@ void resetGame(void)  //スタート画面に戻る
     balls[i].vz = 0.0;
     balls[i].r = BALL_RADIUS;
     balls[i].color = i;
+    balls[i].type = BALL_NORMAL;
   }
 
   launcherX = 0.0;
@@ -56,6 +61,10 @@ void resetGame(void)  //スタート画面に戻る
   ballScore = 0;
   pinScore = 0;
   matchFinished = 0;
+
+  //残弾数関連
+  snakeAmmo = SPECIAL_AMMO;
+  zigzagAmmo = SPECIAL_AMMO;
 }
 
 void resetRound(void) //次のラウンドへ移行
@@ -70,6 +79,7 @@ void resetRound(void) //次のラウンドへ移行
         balls[i].vx = 0.0;
         balls[i].vy = BALL_SPEED_Y;
         balls[i].vz = 0.0;
+        balls[i].type = BALL_NORMAL;
     }
 
     launcherX = 0.0;
@@ -82,12 +92,15 @@ void resetRound(void) //次のラウンドへ移行
     remainingTime = GAME_TIME;
     keyFlags = 0;
 
+    snakeAmmo = SPECIAL_AMMO;
+    zigzagAmmo = SPECIAL_AMMO;
+
     gameFlags &= ~(MASK_BALL_WIN | MASK_PIN_WIN); //MASK_GAMEは消さない
 
     startWait();  //待機へ移行
 }
 
-void spawnBall(void)  //アクティブでないボールをアクティブにする
+void spawnBall(void)  //通常ボール発射
 {
   int i;
 
@@ -102,9 +115,35 @@ void spawnBall(void)  //アクティブでないボールをアクティブに�
       balls[i].vx = 0.0;
       balls[i].vy = BALL_SPEED_Y;
       balls[i].vz = 0.0;
+      balls[i].type = BALL_NORMAL;  //通常ボール
       return;
     }
   }
+}
+
+//特殊ボール発射
+int spawnSpecialBall(int type)
+{
+  int i;
+
+  for (i = 0; i < MAX_BALLS; i++) {
+    if (!balls[i].active) {
+      balls[i].active = 1;
+
+      balls[i].x = launcherX;
+      balls[i].y = 10.0;
+      balls[i].z = BALL_RADIUS;
+      balls[i].vx = 0.0;
+      balls[i].vy = BALL_SPEED_Y;
+      balls[i].vz = 0.0;
+
+      balls[i].type = type;
+
+      return 1;
+    }
+  }
+
+  return 0;
 }
 
 void updateGame(void) //状態更新
@@ -151,9 +190,36 @@ void updateBalls(void)  //ボールの挙動
   for (i = 0; i < MAX_BALLS; i++) {
     if (!balls[i].active) continue;
 
-    //アクティブだけボールが動く
-    balls[i].x += balls[i].vx;
-    balls[i].y += balls[i].vy;
+    // //アクティブだけボールが動く
+    // balls[i].x += balls[i].vx;
+    // balls[i].y += balls[i].vy;
+
+    switch (balls[i].type) {
+
+      case BALL_SNAKE:
+        // スネーク処理
+        balls[i].x += sin(balls[i].y*0.3) * 0.3;
+        balls[i].y += balls[i].vy;
+        break;
+
+      case BALL_ZIGZAG:
+        // 進んだ距離に応じて左右方向を切り替える
+        if (((int)((10.0 - balls[i].y) / 1.6)) % 2 == 0) {
+          balls[i].x += 0.3;
+        }
+        else {
+          balls[i].x -= 0.3;
+        }
+
+        balls[i].y += balls[i].vy;
+        break;
+
+      case BALL_NORMAL:
+      default:
+        balls[i].x += balls[i].vx;
+        balls[i].y += balls[i].vy;
+        break;
+    }
 
     //レーン端に到達したらアクティブでなくなる
     if (balls[i].y < -12.0) {

@@ -22,10 +22,10 @@ int getSpawnInterval(void)
         return 1000;
     }
     else if (remainingTime > 10.0) {
-        return 750;
+        return 850;
     }
     else {
-        return 500;
+        return 700;
     }
 }
 

@@ -480,11 +480,11 @@ void drawUI(void)
     sprintf(buf, "Ball:%d  Pin:%d", ballScore, pinScore);
     drawString(10, 160, buf);
 
-    sprintf(buf, "Snake(F):%d", snakeAmmo);
-    drawString(10, 140, buf);
+    sprintf(buf, "Snake(F): %d/3", snakeAmmo);
+    drawString(240, 180, buf);
 
-    sprintf(buf, "Zigzag(G):%d", zigzagAmmo);
-    drawString(10, 120, buf);
+    sprintf(buf, "Zigzag(G): %d/3", zigzagAmmo);
+    drawString(240, 160, buf);
 
     //ゲーム勝敗表示
     if (matchFinished) {

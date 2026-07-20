@@ -198,7 +198,7 @@ void updateBalls(void)  //ボールの挙動
 
       case BALL_SNAKE:
         // スネーク処理
-        balls[i].x += sin(balls[i].y*0.3) * 0.3;
+        balls[i].x = sin(balls[i].y*0.3);
         balls[i].y += balls[i].vy;
         break;
 
